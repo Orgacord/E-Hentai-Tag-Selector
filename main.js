@@ -529,13 +529,22 @@ Object.keys(tags).forEach(category => {
                         // Restore selected tags
                         localStorage.setItem("selectedTags", JSON.stringify(config.selectedTags));
                         config.selectedTags.forEach(tag => {
-                            const [category, ...tagParts] = tag.split(":");
-                            const tagName = tagParts.join(":");
-                            const checkbox = checkboxes[category + ":" + tagName];
-                            if (checkbox) {
-                                checkbox.checked = true;
-                            }
-                        });
+    					const isNegative = tag.startsWith("-");
+    					const cleanedTag = isNegative ? tag.slice(1) : tag;
+    					const [category, ...tagParts] = cleanedTag.split(":");
+    					const tagName = tagParts.join(":");
+    					const checkbox = checkboxes[category + ":" + tagName];
+    					if (checkbox) {
+        					if (isNegative) {
+            					checkbox.nextSibling.checked = true;
+            					localStorage.setItem("negative:" + category + ":" + tagName, "true");
+        					} else {
+            					checkbox.checked = true;
+            					localStorage.setItem(category + ":" + tagName, "true");
+        					}
+    					}
+					});
+					
 
                         // Restore pinned tags
                         config.pinnedTags.forEach(tag => {
@@ -571,5 +580,7 @@ Object.keys(tags).forEach(category => {
         loadBookmarks();
     });
 })();
+
+
 
 
