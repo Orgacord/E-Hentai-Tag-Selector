@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         E-Hentai Tag Selector
 // @namespace    http://tampermonkey.net/
-// @version      4.0.6
+// @version      4.0.8
 // @description  a floating tag selection panel for e-hentai.org search
 // @author       Orgacord
 // @match        https://e-hentai.org/*
@@ -87,6 +87,7 @@
 
         // UI panel
         const panel = document.createElement("div");
+        let compactMode = false;
         panel.style.position = "fixed";
         panel.style.background = "#282c34";
         panel.style.color = "white";
@@ -98,43 +99,6 @@
         panel.style.display = "flex";
         panel.style.flexDirection = "column";
         panel.style.transition = "all 0.3s ease";
-
-        function updatePanelLayout() {
-            const width = window.innerWidth;
-
-            if (width > 1200) {
-                // Desktop layout
-                panel.style.top = "50px";
-                panel.style.right = "10px";
-                panel.style.bottom = "auto";
-                panel.style.left = "auto";
-                panel.style.width = "300px";
-                panel.style.height = "900px";
-                panel.style.borderRadius = "12px";
-            }
-            else if (width > 800) {
-                // Tablet layout
-                panel.style.top = "20px";
-                panel.style.right = "10px";
-                panel.style.width = "250px";
-                panel.style.height = "80vh";
-                panel.style.borderRadius = "10px";
-            }
-            else {
-                // Mobile layout
-                panel.style.top = "auto";
-                panel.style.right = "0";
-                panel.style.left = "0";
-                panel.style.bottom = "0";
-                panel.style.width = "100%";
-                panel.style.height = "50vh";
-                panel.style.borderRadius = "12px 12px 0 0";
-                panel.style.overflowY = "auto";
-            }
-        }
-
-        updatePanelLayout();
-        window.addEventListener("resize", updatePanelLayout);
 
         const searchBox = document.createElement("input");
         searchBox.type = "text";
@@ -149,7 +113,16 @@
         panel.appendChild(searchBox);
 
         const scrollContainer = document.createElement("div");
-        scrollContainer.style.maxHeight = "460px";
+        function updateScrollContainerHeight() {
+            const vh = window.innerHeight;
+            const available = vh - 250;
+
+            scrollContainer.style.maxHeight = available > 200 ? `${available}px` : "200px";
+            scrollContainer.style.overflowY = "auto";
+        }
+
+        updateScrollContainerHeight();
+        window.addEventListener("resize", updateScrollContainerHeight);
         scrollContainer.style.overflowY = "auto";
         scrollContainer.style.padding = "5px";
         scrollContainer.style.borderRadius = "8px";
@@ -355,8 +328,20 @@ Object.keys(tags).forEach(category => {
         toggleBtn.style.cursor = "pointer";
         toggleBtn.style.fontWeight = "bold";
         toggleBtn.style.boxShadow = "0 2px 6px rgba(0,0,0,0.4)";
-        toggleBtn.style.display = "none";
-
+        
+        function updateToggleBtnVisibility() {
+            const mobileBreakpoint = 800; // px
+            const screenWidth = Math.min(window.screen.width, window.screen.height);
+            if (screenWidth <= mobileBreakpoint) {
+                toggleBtn.style.display = "block";
+            } else {
+                toggleBtn.style.display = "none";
+            }
+        }
+        
+        updateToggleBtnVisibility();
+        window.addEventListener("resize", updateToggleBtnVisibility);
+        
         document.body.appendChild(toggleBtn);
 
 
@@ -598,6 +583,75 @@ Object.keys(tags).forEach(category => {
             link.download = "config.json";
             link.click();
         });
+        function updatePanelLayout() {
+            const width = window.innerWidth;
+
+            if (width > 1200) {
+                compactMode = false;
+                panel.style.top = "50px";
+                panel.style.right = "10px";
+                panel.style.bottom = "auto";
+                panel.style.left = "auto";
+                panel.style.width = "300px";
+                panel.style.height = "900px";
+                panel.style.borderRadius = "12px";
+            }
+            else if (width > 800) {
+                compactMode = false;
+                panel.style.top = "20px";
+                panel.style.right = "10px";
+                panel.style.width = "250px";
+                panel.style.height = "80vh";
+                panel.style.borderRadius = "10px";
+            }
+            else {
+                compactMode = true;
+                panel.style.top = "auto";
+                panel.style.right = "0";
+                panel.style.left = "0";
+                panel.style.bottom = "0";
+                panel.style.width = "100%";
+                panel.style.height = "35vh";
+                panel.style.padding = "0px";
+                panel.style.borderRadius = "12px 12px 0 0";
+                panel.style.overflowY = "auto";
+            }
+
+            toggleCompactUI(compactMode);
+        }
+
+        function toggleCompactUI(isCompact) {
+            searchBox.style.display = isCompact ? "none" : "block";
+            selectedTagsContainer.style.display = isCompact ? "none" : "block";
+            bookmarkLabel.style.display = isCompact ? "none" : "block";
+            bookmarkSelect.style.display = isCompact ? "none" : "block";
+            bookmarkSaveBtn.style.display = isCompact ? "none" : "block";
+            bookmarkLoadBtn.style.display = isCompact ? "none" : "block";
+            bookmarkDeleteBtn.style.display = isCompact ? "none" : "block";
+            configBtnWrapper.style.display = isCompact ? "none" : "flex";
+
+            scrollContainer.style.padding = isCompact ? "0" : "5px";
+            scrollContainer.querySelectorAll("label").forEach(label => {
+                label.style.padding = isCompact ? "6px" : "8px";
+                label.style.marginBottom = isCompact ? "4px" : "2px";
+                label.style.fontSize = isCompact ? "1.1rem" : "0.95rem";
+                label.querySelector(".pin-btn").style.display = isCompact ? "none" : "inline-block";
+            });
+              if (isCompact) {
+                scrollContainer.style.fontSize = "1.2rem";
+                scrollContainer.style.lineHeight = "1.8rem";
+                scrollContainer.style.padding = "4px 8px";
+            } else {
+                scrollContainer.style.fontSize = "0.95rem";
+                scrollContainer.style.lineHeight = "1.4rem";
+                scrollContainer.style.padding = "5px";
+            }
+        }
+
+
+        updatePanelLayout();
+        window.addEventListener("resize", updatePanelLayout);
+
 
         importBtn.addEventListener("click", () => {
         const input = document.createElement("input");
@@ -669,6 +723,3 @@ Object.keys(tags).forEach(category => {
         loadBookmarks();
     });
 })();
-
-
-
