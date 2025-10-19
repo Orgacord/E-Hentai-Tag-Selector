@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         E-Hentai Tag Selector dev 2
+// @name         E-Hentai Tag Selector
 // @namespace    http://tampermonkey.net/
 // @version      4.0.10
 // @description  a floating tag selection panel for e-hentai.org search
