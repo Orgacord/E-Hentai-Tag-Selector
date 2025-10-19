@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         E-Hentai Tag Selector
+// @name         E-Hentai Tag Selector dev 2
 // @namespace    http://tampermonkey.net/
-// @version      4.0.8
+// @version      4.0.10
 // @description  a floating tag selection panel for e-hentai.org search
 // @author       Orgacord
 // @match        https://e-hentai.org/*
@@ -17,6 +17,7 @@
     window.addEventListener('load', function() {
         let searchInput = document.getElementById("f_search");
         if (!searchInput) return;
+        console.log("Panel script started");
 
         // shit work (maybe there is a better way but fuck it)
         const tags = {
@@ -85,9 +86,14 @@
             }
         }
 
+        function isRealMobile() {
+            const ua = navigator.userAgent || "";
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+        }
+
+
         // UI panel
         const panel = document.createElement("div");
-        let compactMode = false;
         panel.style.position = "fixed";
         panel.style.background = "#282c34";
         panel.style.color = "white";
@@ -313,55 +319,8 @@ Object.keys(tags).forEach(category => {
         panel.appendChild(buttonsContainer);
 
         document.body.appendChild(panel);
+        console.log("Panel appended");
 
-        const toggleBtn = document.createElement("button");
-        toggleBtn.innerText = "⚙️ Tags";
-        toggleBtn.style.position = "fixed";
-        toggleBtn.style.bottom = "10px";
-        toggleBtn.style.right = "10px";
-        toggleBtn.style.zIndex = "10000";
-        toggleBtn.style.padding = "10px 14px";
-        toggleBtn.style.borderRadius = "10px";
-        toggleBtn.style.background = "#444";
-        toggleBtn.style.color = "white";
-        toggleBtn.style.border = "none";
-        toggleBtn.style.cursor = "pointer";
-        toggleBtn.style.fontWeight = "bold";
-        toggleBtn.style.boxShadow = "0 2px 6px rgba(0,0,0,0.4)";
-        
-        function updateToggleBtnVisibility() {
-            const mobileBreakpoint = 800; // px
-            const screenWidth = Math.min(window.screen.width, window.screen.height);
-            if (screenWidth <= mobileBreakpoint) {
-                toggleBtn.style.display = "block";
-            } else {
-                toggleBtn.style.display = "none";
-            }
-        }
-        
-        updateToggleBtnVisibility();
-        window.addEventListener("resize", updateToggleBtnVisibility);
-        
-        document.body.appendChild(toggleBtn);
-
-
-        function updateToggleVisibility() {
-            if (window.innerWidth <= 800) {
-                toggleBtn.style.display = "block";
-                panel.style.display = "none";
-            } else {
-                toggleBtn.style.display = "none";
-                panel.style.display = "flex";
-            }
-        }
-
-        updateToggleVisibility();
-        window.addEventListener("resize", updateToggleVisibility);
-
-        toggleBtn.addEventListener("click", () => {
-            const isVisible = panel.style.display === "flex";
-            panel.style.display = isVisible ? "none" : "flex";
-        });
 
 
         function updateSearchInput() {
@@ -583,74 +542,67 @@ Object.keys(tags).forEach(category => {
             link.download = "config.json";
             link.click();
         });
+
         function updatePanelLayout() {
-            const width = window.innerWidth;
+        if (!panel) return;
 
-            if (width > 1200) {
-                compactMode = false;
-                panel.style.top = "50px";
-                panel.style.right = "10px";
-                panel.style.bottom = "auto";
-                panel.style.left = "auto";
-                panel.style.width = "300px";
-                panel.style.height = "900px";
-                panel.style.borderRadius = "12px";
-            }
-            else if (width > 800) {
-                compactMode = false;
-                panel.style.top = "20px";
-                panel.style.right = "10px";
-                panel.style.width = "250px";
-                panel.style.height = "80vh";
-                panel.style.borderRadius = "10px";
-            }
-            else {
-                compactMode = true;
-                panel.style.top = "auto";
-                panel.style.right = "0";
-                panel.style.left = "0";
-                panel.style.bottom = "0";
-                panel.style.width = "100%";
-                panel.style.height = "35vh";
-                panel.style.padding = "0px";
-                panel.style.borderRadius = "12px 12px 0 0";
-                panel.style.overflowY = "auto";
-            }
-
-            toggleCompactUI(compactMode);
-        }
-
-        function toggleCompactUI(isCompact) {
-            searchBox.style.display = isCompact ? "none" : "block";
-            selectedTagsContainer.style.display = isCompact ? "none" : "block";
-            bookmarkLabel.style.display = isCompact ? "none" : "block";
-            bookmarkSelect.style.display = isCompact ? "none" : "block";
-            bookmarkSaveBtn.style.display = isCompact ? "none" : "block";
-            bookmarkLoadBtn.style.display = isCompact ? "none" : "block";
-            bookmarkDeleteBtn.style.display = isCompact ? "none" : "block";
-            configBtnWrapper.style.display = isCompact ? "none" : "flex";
-
-            scrollContainer.style.padding = isCompact ? "0" : "5px";
-            scrollContainer.querySelectorAll("label").forEach(label => {
-                label.style.padding = isCompact ? "6px" : "8px";
-                label.style.marginBottom = isCompact ? "4px" : "2px";
-                label.style.fontSize = isCompact ? "1.1rem" : "0.95rem";
-                label.querySelector(".pin-btn").style.display = isCompact ? "none" : "inline-block";
+        if (isRealMobile()) {
+            panel.querySelectorAll("button, select, label, input, span").forEach(el => {
+                el.style.fontSize = "26px";
+                el.style.padding = "5px";
             });
-              if (isCompact) {
-                scrollContainer.style.fontSize = "1.2rem";
-                scrollContainer.style.lineHeight = "1.8rem";
-                scrollContainer.style.padding = "4px 8px";
-            } else {
-                scrollContainer.style.fontSize = "0.95rem";
-                scrollContainer.style.lineHeight = "1.4rem";
-                scrollContainer.style.padding = "5px";
-            }
+            panel.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.style.transform = "scale(1.6)";
+                cb.style.marginRight = "10px";
+                cb.style.marginLeft = "10px";
+                cb.style.cursor = "pointer";
+            });
+            panel.style.top = "auto";
+            panel.style.bottom = "0";
+            panel.style.left = "0";
+            panel.style.width = "100%";
+            panel.style.height = "35vh";
+            panel.style.paddingBottom = "env(safe-area-inset-bottom)";
+            panel.style.borderRadius = "12px 12px 0 0";
+            panel.style.position = "fixed";
+            bookmarkLabel.style.display = "none";
+            bookmarkSelect.style.display = "none";
+            bookmarkSaveBtn.style.display = "none";
+            bookmarkLoadBtn.style.display = "none";
+            bookmarkDeleteBtn.style.display = "none";
+        } else {
+            panel.style.top = "50px";
+            panel.style.right = "10px";
+            panel.style.width = "300px";
+            panel.style.height = "900px";
+            panel.style.borderRadius = "12px";
+            panel.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.style.transform = "scale(1)";
+                cb.style.marginRight = "4px";
+            });
+        }
+    }
+
+      if (!document.body.contains(panel)) {
+          document.body.appendChild(panel);
+      }
+      updatePanelLayout();
+
+      window.addEventListener('pageshow', updatePanelLayout);
+
+        window.addEventListener("resize", updatePanelLayout);
+        window.addEventListener("orientationchange", updatePanelLayout);
+        window.addEventListener("load", updatePanelLayout);
+
+        console.log("UA:", navigator.userAgent);
+        try {
+          localStorage.setItem("__test__", "1");
+          localStorage.removeItem("__test__");
+          console.log("localStorage works ✅");
+        } catch (e) {
+          console.warn("localStorage not supported ❌", e);
         }
 
-
-        updatePanelLayout();
-        window.addEventListener("resize", updatePanelLayout);
 
 
         importBtn.addEventListener("click", () => {
