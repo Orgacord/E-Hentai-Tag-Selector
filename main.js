@@ -7,8 +7,8 @@
 // @match        https://e-hentai.org/*
 // @match        https://exhentai.org/*
 // @grant        none
-// @downloadURL https://update.greasyfork.org/scripts/531923/E-Hentai%20Tag%20Selector.user.js
-// @updateURL https://update.greasyfork.org/scripts/531923/E-Hentai%20Tag%20Selector.meta.js
+// @downloadURL https://update.greasyfork.org/scripts/531923/E-Hentai%20Tag%20Selector%20dev%202.user.js
+// @updateURL https://update.greasyfork.org/scripts/531923/E-Hentai%20Tag%20Selector%20dev%202.meta.js
 // ==/UserScript==
 
 (function() {
@@ -563,6 +563,7 @@ Object.keys(tags).forEach(category => {
             panel.style.width = "100%";
             panel.style.height = "35vh";
             panel.style.paddingBottom = "env(safe-area-inset-bottom)";
+            document.body.style.paddingBottom = "35vh";
             panel.style.borderRadius = "12px 12px 0 0";
             panel.style.position = "fixed";
             bookmarkLabel.style.display = "none";
@@ -675,3 +676,4 @@ Object.keys(tags).forEach(category => {
         loadBookmarks();
     });
 })();
+
